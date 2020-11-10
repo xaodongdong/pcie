@@ -25,6 +25,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <inttypes.h>
+#include <time.h>
 
 #define DISP_LINE_LEN	16
 
@@ -127,6 +128,23 @@ static int parse_area_spec(const char *str, off_t *start, size_t *size)
 	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
 	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
 
+static void memory_read_speed_test(const void *addr, size_t nbytes)
+{
+	struct timeval start_time, end_time;
+	int sec,usec,time_us;
+	double speed_MB_s = 0.0;
+	char copy_buff[nbytes];
+
+	gettimeofday(&start_time, NULL);
+	memcpy(copy_buff,addr,nbytes);
+	gettimeofday(&end_time, NULL);
+
+	sec = end_time.tv_sec - start_time.tv_sec;
+	usec = end_time.tv_usec - start_time.tv_usec;
+	time_us = sec * 10^6 + usec;
+	speed_MB_s = (double)nbytes/(double)time_us * 1000000.0 / 1024.0 /1024.0;
+	printf("Byte num: %d Byte, Time %d us,Speed : %.02f MB/s", nbytes, time_us, speed_MB_s);
+}
 static int memory_display(const void *addr, off_t offs,
 			  size_t nbytes, int width, int swab)
 {
@@ -302,6 +320,11 @@ static int cmd_memory_display(int argc, char **argv)
 	mem = memmap(file, start, size);
 
 	memory_display(mem, start, size, width, swap);
+
+	int test_time = 5;
+	while(test_time--) {
+		memory_read_speed_test(mem, size);
+	}
 
 	close(memfd);
 
