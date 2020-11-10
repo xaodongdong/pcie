@@ -136,14 +136,18 @@ static void memory_read_speed_test(const void *addr, size_t nbytes)
 	char copy_buff[nbytes];
 
 	gettimeofday(&start_time, NULL);
-	memcpy(copy_buff,addr,nbytes);
+	for(int i = 0; i< nbytes; i++) {
+		copy_buff[i] = *(char *)addr;
+		addr++;
+	}
+	//memcpy(copy_buff, (char *)addr, nbytes);
 	gettimeofday(&end_time, NULL);
 
 	sec = end_time.tv_sec - start_time.tv_sec;
 	usec = end_time.tv_usec - start_time.tv_usec;
 	time_us = sec * 10^6 + usec;
 	speed_MB_s = (double)nbytes/(double)time_us * 1000000.0 / 1024.0 /1024.0;
-	printf("Byte num: %d Byte, Time %d us,Speed : %.02f MB/s", nbytes, time_us, speed_MB_s);
+	printf("Byte num: %d Byte, Time %d us,Speed : %.02f MB/s\n", nbytes, time_us, speed_MB_s);
 }
 static int memory_display(const void *addr, off_t offs,
 			  size_t nbytes, int width, int swab)
@@ -319,12 +323,10 @@ static int cmd_memory_display(int argc, char **argv)
 
 	mem = memmap(file, start, size);
 
-	memory_display(mem, start, size, width, swap);
-
-	int test_time = 5;
-	while(test_time--) {
-		memory_read_speed_test(mem, size);
-	}
+	//memory_display(mem, start, size, width, swap);
+	char num = 50;
+	while(num--)
+	memory_read_speed_test(mem, size);
 
 	close(memfd);
 
