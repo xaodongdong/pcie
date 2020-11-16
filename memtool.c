@@ -133,12 +133,30 @@ static void memory_read_speed_test(const void *addr, size_t nbytes)
 	struct timeval start_time, end_time;
 	int sec,usec,time_us;
 	double speed_MB_s = 0.0;
-	uint8_t width = 8;
-	char copy_buff_8[nbytes];
+	uint8_t width = 1;
+	uint64_t copy_buff_64[nbytes/8];
+	uint32_t copy_buff_32[nbytes/4];
+	uint8_t  copy_buff_8[nbytes];
 
 	gettimeofday(&start_time, NULL);
+/*
 	for(int i = 0; i< nbytes/width; i++) {
 		memcpy(copy_buff_8, (char *)addr,width);
+		addr += width;
+	}
+*/
+	for(int i = 0; i< nbytes/width; i++) {
+		switch(width) {
+			case 8:
+				copy_buff_64[i] = *(uint64_t *)addr;
+				break;
+			case 4:
+				copy_buff_32[i] = *(uint32_t *)addr;
+				break;
+			case 1:
+				copy_buff_8[i] = *(uint8_t *)addr;
+				break;
+		}
 		addr += width;
 	}
 	gettimeofday(&end_time, NULL);
